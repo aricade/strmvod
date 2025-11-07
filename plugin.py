@@ -6,7 +6,19 @@ import threading
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Callable, Set, Optional
 import requests
+import re
 
+def clean_title(title: str, settings: dict) -> str:
+    """Optionally remove language prefixes from titles based on plugin settings."""
+    if not settings.get("clean_prefixes", True):
+        return title.strip()
+
+    regex = settings.get("custom_prefix_regex") or r'^[A-Z]{2,3}\s*\|\s*'
+    try:
+        return re.sub(regex, '', title).strip()
+    except re.error as e:
+        print(f"[vod2strm] Invalid custom regex: {regex} ({e})")
+        return title.strip()
 
 # Global scheduler state
 _bg_thread = None
@@ -130,6 +142,8 @@ class Plugin:
         {"id": "api_password", "label": "API Password", "type": "string", "default": "tv"},
         {"id": "tmdb_api_key", "label": "TMDB API Key (optional)", "type": "string", "default": "", "help_text": "Get free API key from themoviedb.org. If empty, uses original names."},
         {"id": "write_nfo_files", "label": "Write NFO Files", "type": "boolean", "default": False, "help_text": "Write .nfo metadata files for Jellyfin/Emby/Plex. Requires TMDB API key."},
+        {"id": "clean_prefixes", "label": "Clean Language Prefixes", "type": "boolean", "default": True,"help_text": "Strip leading prefixes like 'EN| ' or 'FR| ' from titles before NFO lookup or file creation."},
+        {"id": "custom_prefix_regex", "label": "Custom Prefix Regex", "type": "string", "default": "^[A-Z]{2,3}\\s*\\|\\s*", "help_text": "Optional regex to remove prefixes from titles. Leave blank to use the default (removes 2–3 letter codes like 'EN|')."},
         {"id": "movies_root", "label": "Movies Root", "type": "string", "default": "/VODs/movies"},
         {"id": "series_root", "label": "Series Root", "type": "string", "default": "/VODs/series"},
         {"id": "probe_urls", "label": "Probe URLs (HEAD)", "type": "boolean", "default": False},
