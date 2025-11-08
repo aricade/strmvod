@@ -517,7 +517,7 @@ class Plugin:
         """Get movie name and year using TMDB if available."""
         movie_id = movie.get("id")
         tmdb_id = movie.get("tmdb_id")
-        original_name = movie.get("name")
+        original_name = clean_title(movie.get("name"), self.saved_settings)
         original_year = movie.get("year")
         cache_key = f"movie_{tmdb_id}"
         if tmdb_id and cache_key in tmdb_cache:
@@ -550,7 +550,7 @@ class Plugin:
         """Get series name and year using TMDB if available."""
         series_id = series.get("id")
         tmdb_id = series.get("tmdb_id")
-        original_name = series.get("name")
+        original_name = clean_title(movie.get("name"), self.saved_settings)
         original_year = series.get("year")
         cache_key = f"series_{tmdb_id}"
         if tmdb_id and cache_key in tmdb_cache:
